@@ -2,6 +2,8 @@ use std::fmt;
 use unic_ucd::*;
 
 pub struct Info {
+    name: Name,
+    category: GeneralCategory,
     block: &'static str,
     alphabetic: bool,
     bidi_mirrored: bool,
@@ -10,11 +12,14 @@ pub struct Info {
     lowercase: bool,
     uppercase: bool,
     whitespace: bool,
+    age: Age,
 }
 
 impl Info {
     pub fn of(c: char) -> Option<Info> {
         Some(Info {
+            name: Name::of(c)?,
+            category: GeneralCategory::of(c),
             block: Block::of(c)?.name,
             alphabetic: is_alphabetic(c),
             bidi_mirrored: is_bidi_mirrored(c),
@@ -23,21 +28,25 @@ impl Info {
             lowercase: is_lowercase(c),
             uppercase: is_uppercase(c),
             whitespace: is_white_space(c),
+            age: Age::of(c)?,
         })
     }
 }
 
 impl fmt::Display for Info {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "block: {}\n", self.block)?;
-        write!(f, "alphabetic: {}\n", self.alphabetic)?;
-        write!(f, "bidi_mirrored: {}\n", self.bidi_mirrored)?;
+        write!(f, "name:           {}\n", self.name)?;
+        write!(f, "category:       {}\n", self.category)?;
+        write!(f, "block:          {}\n", self.block)?;
+        write!(f, "alphabetic:     {}\n", self.alphabetic)?;
+        write!(f, "bidi_mirrored:  {}\n", self.bidi_mirrored)?;
         write!(f, "case_ignorable: {}\n", self.case_ignorable)?;
-        write!(f, "cased: {}\n", self.cased)?;
-        write!(f, "lowercase: {}\n", self.lowercase)?;
-        write!(f, "uppercase: {}\n", self.uppercase)?;
-        write!(f, "whitespace: {}\n", self.whitespace)?;
-        write!(f, "alphabetic: {}\n", self.alphabetic)
+        write!(f, "cased:          {}\n", self.cased)?;
+        write!(f, "lowercase:      {}\n", self.lowercase)?;
+        write!(f, "uppercase:      {}\n", self.uppercase)?;
+        write!(f, "whitespace:     {}\n", self.whitespace)?;
+        write!(f, "alphabetic:     {}\n", self.alphabetic)?;
+        write!(f, "since version:  {}\n", self.age.actual())
     }
 }
 

@@ -86,7 +86,7 @@ fn info(args: &ArgMatches) {
         if let Some(info) = Info::of(c) {
             println!("{}", &info);
         } else {
-            println!("error: {} is not recognized.", c);
+            println!("error: '{}' ({}) is not recognized.", c, c as u32);
         }
     } else {
         println!("error: can't parse {}.", composed);
