@@ -1,8 +1,10 @@
-use unicode_cli::Block;
-use clap::{App, Arg, SubCommand, ArgMatches};
+use unic_ucd::Block;
+use clap::{App, AppSettings, Arg, SubCommand, ArgMatches};
+use unicode_cli::*;
 
 fn main() {
     let matches = App::new("unicode-cli")
+        .setting(AppSettings::ArgRequiredElseHelp)
         .version("0.1.0")
         .author("Patrick Elsen <pelsen@xfbs.net>")
         .about("Unicode character lookup and inspection tool.")
@@ -25,12 +27,22 @@ fn main() {
                         .help("String containing unicode data."),
                 ),
         )
+        .subcommand(
+            SubCommand::with_name("info")
+                .about("Print information about a unicode character.")
+                .arg(
+                    Arg::with_name("CHARACTER")
+                        .required(true)
+                        .help("Unicode character."),
+                ),
+        )
         .get_matches();
 
     match matches.subcommand() {
         ("compose", Some(args)) => compose(args),
         ("inspect", Some(args)) => inspect(args),
-        _ => {},
+        ("info", Some(args)) => info(args),
+        _ => unreachable!(),
     }
 }
 
@@ -61,8 +73,22 @@ fn inspect(args: &ArgMatches) {
             println!("{:?}", name);
         }
 
-        if let Some(block) = Block::from(chr) {
-            println!("block: {}", block.name());
+        if let Some(block) = Block::of(chr) {
+            println!("block: {}", block.name);
         }
+    }
+}
+
+fn info(args: &ArgMatches) {
+    let composed = args.value_of("CHARACTER").unwrap();
+
+    if let Some(c) = parse_scalar_value(composed) {
+        if let Some(info) = Info::of(c) {
+            println!("{}", &info);
+        } else {
+            println!("error: {} is not recognized.", c);
+        }
+    } else {
+        println!("error: can't parse {}.", composed);
     }
 }
