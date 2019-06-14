@@ -1,5 +1,5 @@
-use unic_ucd::Block;
 use clap::{App, AppSettings, Arg, SubCommand, ArgMatches};
+use unic_ucd::*;
 use unicode_cli::*;
 
 fn main() {
@@ -36,12 +36,33 @@ fn main() {
                         .help("Unicode character."),
                 ),
         )
+        .subcommand(
+            SubCommand::with_name("list")
+                .about("List unicode characters")
+                .arg(
+                    Arg::with_name("long")
+                        .short("l")
+                        .long("long")
+                        .help("Print details for each character."),
+                )
+                .arg(
+                    Arg::with_name("all")
+                        .short("a")
+                        .long("all")
+                        .help("Print all characters."),
+                )
+                .arg(
+                    Arg::with_name("BLOCK")
+                        .help("Which block to display."),
+                ),
+        )
         .get_matches();
 
     match matches.subcommand() {
         ("compose", Some(args)) => compose(args),
         ("inspect", Some(args)) => inspect(args),
         ("info", Some(args)) => info(args),
+        ("list", Some(args)) => list(args),
         _ => unreachable!(),
     }
 }
@@ -51,8 +72,7 @@ fn compose(args: &ArgMatches) {
 
     if let Some(values) = args.values_of("NAME") {
         for name in values {
-            println!("inspecting {}", name);
-            if let Some(point) = unicode_names2::character(name) {
+            if let Some(point) = parse_scalar_value(name) {
                 composed.push(point);
             } else {
                 println!("{} is not a name of a unicode code point.", name);
@@ -90,5 +110,25 @@ fn info(args: &ArgMatches) {
         }
     } else {
         println!("error: can't parse {}.", composed);
+    }
+}
+
+fn list(args: &ArgMatches) {
+    if let Some(block) = args.value_of("BLOCK") {
+        if let Some(block) = BlockIter::default().find(|b| b.name == block) {
+            println!("{}", block.name);
+
+            for c in block.range {
+                print!("{}", c);
+            }
+
+            println!("");
+        } else {
+            println!("error: can't find block {}", block);
+        }
+    } else {
+        for block in BlockIter::default() {
+            println!("{}", block.name);
+        }
     }
 }
