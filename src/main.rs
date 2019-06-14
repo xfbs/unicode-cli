@@ -1,4 +1,4 @@
-use unicode_cli::Blocks;
+use unicode_cli::Block;
 use clap::{App, Arg, SubCommand, ArgMatches};
 
 fn main() {
@@ -59,6 +59,10 @@ fn inspect(args: &ArgMatches) {
     for chr in composed.chars() {
         if let Some(name) = unicode_names2::name(chr) {
             println!("{:?}", name);
+        }
+
+        if let Some(block) = Block::from(chr) {
+            println!("block: {}", block.name());
         }
     }
 }

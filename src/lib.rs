@@ -1,23 +1,31 @@
 use std::io::Read;
+use std::cmp::Ordering;
+use crate::data::UNICODE_BLOCKS;
 
-pub const UNICODE_DATA: &'static str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/data/UnicodeData.txt"));
+mod data;
 
-pub const UNICODE_BLOCKS: &'static str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/data/Blocks.txt"));
-
+#[derive(Debug, Copy, Clone)]
 pub struct Block {
-    start: char,
-    end: char,
-    name: String,
+    start: u32,
+    end: u32,
+    name: &'static str,
 }
 
-pub struct Blocks {
-    blocks: Vec<Block>
-}
+impl Block {
+    pub fn from(c: char) -> Option<Block> {
+        let c = c as u32;
+        let pos = UNICODE_BLOCKS.binary_search_by(|element|
+            match (element.start <= c, element.end > c) {
+                (true, true) => Ordering::Equal,
+                (false, true) => Ordering::Greater,
+                (true, false) => Ordering::Less,
+                (false, false) => unreachable!()
+            });
 
-impl Blocks {
-    pub fn from_file<R: Read>(reader: R) -> Self {
-        Blocks {
-            blocks: vec![]
-        }
+        pos.ok().map(|n| UNICODE_BLOCKS[n])
+    }
+
+    pub fn name(&self) -> &'static str {
+        self.name
     }
 }
