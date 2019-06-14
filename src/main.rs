@@ -3,13 +3,14 @@ use unic_ucd::*;
 use unicode_cli::*;
 
 fn main() {
-    let matches = App::new("unicode-cli")
+    let matches = App::new(env!("CARGO_PKG_NAME"))
         .setting(AppSettings::ArgRequiredElseHelp)
-        .version("0.1.0")
-        .author("Patrick Elsen <pelsen@xfbs.net>")
-        .about("Unicode character lookup and inspection tool.")
+        .version(env!("CARGO_PKG_VERSION"))
+        .author(env!("CARGO_PKG_AUTHORS"))
+        .about(env!("CARGO_PKG_DESCRIPTION"))
         .subcommand(
             SubCommand::with_name("compose")
+                .alias("c")
                 .about("Compose a string from unicode codepoins.")
                 .arg(
                     Arg::with_name("NAME")
@@ -38,6 +39,7 @@ fn main() {
         )
         .subcommand(
             SubCommand::with_name("list")
+                .alias("ls")
                 .about("List unicode characters")
                 .arg(
                     Arg::with_name("long")
