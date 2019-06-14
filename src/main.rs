@@ -1,3 +1,4 @@
+use unicode_cli::Blocks;
 use clap::{App, Arg, SubCommand, ArgMatches};
 
 fn main() {
