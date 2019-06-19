@@ -64,6 +64,32 @@ impl CharInfo {
     }
 
     pub fn display(&self, c: char) {
+        match self.long {
+            9 => self.display_block(c),
+            0 => self.display_print(c),
+            _ => self.display_line(c)
+        }
+    }
+
+    fn display_block(&self, c: char) {
+        match (Name::of(c), Block::of(c)) {
+            (Some(name), Some(block)) => {
+                println!("type: unicode");
+                println!("name: {}", name);
+                println!("block: {}", block.name);
+            }
+            (None, Some(block)) => {
+                if c.is_ascii() {
+                    println!("type: ASCII");
+                    println!("name: unknown");
+                    println!("block: {}", block.name);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    fn display_line(&self, c: char) {
         let flags: [(char, fn(char) -> bool); 6] = [
             ('a', is_alphabetic),
             ('b', is_bidi_mirrored),
@@ -101,18 +127,10 @@ impl CharInfo {
 
             println!("");
         }
+    }
 
-        if self.long == 0 {
-            print!("{}", c);
-            /*
-            use GeneralCategory::*;
-            match GeneralCategory::of(c) {
-                Control => println!("{}", c.escape_default()),
-                SpaceSeparator => println!("'{}'", c.escape_default()),
-                _ => println!("{}", c),
-            }
-            */
-        }
+    fn display_print(&self, c: char) {
+        print!("{}", c);
     }
 }
 

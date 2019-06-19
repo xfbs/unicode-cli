@@ -38,6 +38,7 @@ fn main() {
                 )
                 .arg(
                     Arg::with_name("long")
+                        .multiple(true)
                         .short("l")
                         .long("long")
                         .help("Output more detail."),
@@ -59,6 +60,13 @@ fn main() {
                     Arg::with_name("REGEX")
                         .required(true)
                         .help("Unicode character."),
+                )
+                .arg(
+                    Arg::with_name("long")
+                        .multiple(true)
+                        .short("l")
+                        .long("long")
+                        .help("Output more detail."),
                 ),
         )
         .subcommand(
@@ -130,14 +138,11 @@ fn inspect(args: &ArgMatches) {
 }
 
 fn info(args: &ArgMatches) {
+    let charinfo = CharInfo::new(9);
     let composed = args.value_of("CHARACTER").unwrap();
 
     if let Some(c) = parse_scalar_value(composed) {
-        if let Some(info) = Info::of(c) {
-            println!("{}", &info);
-        } else {
-            println!("error: '{}' ({}) is not recognized.", c, c as u32);
-        }
+        charinfo.display(c);
     } else {
         println!("error: can't parse {}.", composed);
     }
@@ -171,8 +176,9 @@ fn search(args: &ArgMatches) {
         .unwrap();
 
     let res = unicode_cli::search(&regex);
+    let charinfo = CharInfo::new(args.occurrences_of("long") as usize);
 
     for c in res.iter() {
-        println!("{}", c);
+        charinfo.display(*c);
     }
 }
