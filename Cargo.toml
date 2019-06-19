@@ -4,6 +4,8 @@ version = "0.1.0"
 authors = ["Patrick Elsen <pelsen@xfbs.net>"]
 edition = "2018"
 description = "Unicode character lookup and inspection tool."
+license = "MIT"
+repository = "https://github.com/xfbs/unicode-cli"
 
 [dependencies]
 unicode_names2 = "0.2.2"
