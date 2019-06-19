@@ -52,6 +52,82 @@ impl fmt::Display for Info {
     }
 }
 
+pub struct CharInfo {
+    long: usize,
+}
+
+impl CharInfo {
+    pub fn new(long: usize) -> Self {
+        CharInfo {
+            long
+        }
+    }
+
+    pub fn display(&self, c: char) {
+        let flags: [(char, fn(char) -> bool); 6] = [
+            ('a', is_alphabetic),
+            ('b', is_bidi_mirrored),
+            ('c', is_cased),
+            ('i', is_case_ignorable),
+            ('u', is_uppercase),
+            ('l', is_lowercase),
+        ];
+
+        if self.long >= 2 {
+            print!("{}", chartype(c));
+            for flag in &flags {
+                if flag.1(c) {
+                    print!("{}", flag.0);
+                } else {
+                    print!("-");
+                }
+            }
+
+            print!(" {:6X} ", c as u32);
+        }
+
+        if self.long >= 1 {
+            if let Some(block) = Block::of(c) {
+                print!("{} ", block.name);
+            } else {
+                print!("Unknown Block ");
+            }
+
+            if let Some(name) = Name::of(c) {
+                print!("{} ", name);
+            } else {
+                print!("None ");
+            }
+
+            println!("");
+        }
+
+        if self.long == 0 {
+            print!("{}", c);
+            /*
+            use GeneralCategory::*;
+            match GeneralCategory::of(c) {
+                Control => println!("{}", c.escape_default()),
+                SpaceSeparator => println!("'{}'", c.escape_default()),
+                _ => println!("{}", c),
+            }
+            */
+        }
+    }
+}
+
+fn is_unicode(c: char) -> bool {
+    Block::of(c).is_some()
+}
+
+fn chartype(c: char) -> char {
+    if c.is_ascii() {
+        'a'
+    } else {
+        'u'
+    }
+}
+
 pub fn parse_scalar_value(s: &str) -> Option<char> {
     let mut chars = s.chars();
 

@@ -35,6 +35,12 @@ fn main() {
                     Arg::with_name("STRING")
                         .required(true)
                         .help("String containing unicode data."),
+                )
+                .arg(
+                    Arg::with_name("long")
+                        .short("l")
+                        .long("long")
+                        .help("Output more detail."),
                 ),
         )
         .subcommand(
@@ -116,15 +122,10 @@ fn compose(args: &ArgMatches) {
 
 fn inspect(args: &ArgMatches) {
     let composed = args.value_of("STRING").unwrap();
+    let charinfo = CharInfo::new(args.occurrences_of("long") as usize + 2);
 
     for chr in composed.chars() {
-        if let Some(name) = unicode_names2::name(chr) {
-            println!("{:?}", name);
-        }
-
-        if let Some(block) = Block::of(chr) {
-            println!("block: {}", block.name);
-        }
+        charinfo.display(chr);
     }
 }
 
