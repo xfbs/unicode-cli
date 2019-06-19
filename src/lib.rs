@@ -1,5 +1,7 @@
 use std::fmt;
 use unic_ucd::*;
+use regex::Regex;
+use log::*;
 
 pub struct Info {
     name: Name,
@@ -73,4 +75,24 @@ pub fn parse_scalar_value(s: &str) -> Option<char> {
     }
 
     None
+}
+
+pub fn search(regex: &Regex) -> Vec<char> {
+    let mut results = Vec::new();
+
+    for block in BlockIter::new() {
+        for candidate in block.range {
+            if let Some(name) = Name::of(candidate) {
+                let name = name.to_string();
+
+                if regex.is_match(&name) {
+                    results.push(candidate);
+                }
+            } else {
+                debug!("no name for {} in {:?}", candidate as u32, block);
+            }
+        }
+    }
+
+    results
 }

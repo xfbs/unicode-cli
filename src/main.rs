@@ -1,6 +1,8 @@
 use clap::{App, AppSettings, Arg, SubCommand, ArgMatches};
 use unic_ucd::*;
 use unicode_cli::*;
+use regex::RegexBuilder;
+use log::*;
 
 fn main() {
     let matches = App::new(env!("CARGO_PKG_NAME"))
@@ -8,6 +10,12 @@ fn main() {
         .version(env!("CARGO_PKG_VERSION"))
         .author(env!("CARGO_PKG_AUTHORS"))
         .about(env!("CARGO_PKG_DESCRIPTION"))
+        .arg(
+            Arg::with_name("verbose")
+                .short("v")
+                .multiple(true)
+                .help("Output more information."),
+        )
         .subcommand(
             SubCommand::with_name("compose")
                 .alias("c")
@@ -38,6 +46,15 @@ fn main() {
                 ),
         )
         .subcommand(
+            SubCommand::with_name("search")
+                .about("Search for unicode characters by name or properties.")
+                .arg(
+                    Arg::with_name("REGEX")
+                        .required(true)
+                        .help("Unicode character."),
+                ),
+        )
+        .subcommand(
             SubCommand::with_name("list")
                 .alias("ls")
                 .about("List unicode characters")
@@ -60,11 +77,20 @@ fn main() {
         )
         .get_matches();
 
+    stderrlog::new()
+	.module(module_path!())
+	.quiet(matches.is_present("quiet"))
+	.timestamp(stderrlog::Timestamp::Second)
+	.verbosity(matches.occurrences_of("verbose") as usize)
+	.init()
+	.unwrap();
+
     match matches.subcommand() {
         ("compose", Some(args)) => compose(args),
         ("inspect", Some(args)) => inspect(args),
         ("info", Some(args)) => info(args),
         ("list", Some(args)) => list(args),
+        ("search", Some(args)) => search(args),
         _ => unreachable!(),
     }
 }
@@ -132,5 +158,19 @@ fn list(args: &ArgMatches) {
         for block in BlockIter::default() {
             println!("{}", block.name);
         }
+    }
+}
+
+fn search(args: &ArgMatches) {
+    let regex = args.value_of("REGEX").unwrap();
+    let regex = RegexBuilder::new(regex)
+        .case_insensitive(true)
+        .build()
+        .unwrap();
+
+    let res = unicode_cli::search(&regex);
+
+    for c in res.iter() {
+        println!("{}", c);
     }
 }
